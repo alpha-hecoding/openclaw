@@ -1,16 +1,38 @@
-FROM debian:bookworm-slim@sha256:98f4b71de414932439ac6ac690d7060df1f27161073c5036a7553723881bffbe
+# 使用 debian 13 官方镜像
+FROM debian:trixie-slim
+
+# 设置环境变量，避免交互式安装时的提示
+ENV TZ=Asia/Shanghai
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN rm -f /etc/apt/sources.list.d/debian.sources && \
+  printf "deb http://mirrors.aliyun.com/debian/ trixie main non-free non-free-firmware contrib\n\
+  deb-src http://mirrors.aliyun.com/debian/ trixie main non-free non-free-firmware contrib\n\
+  \n\
+  deb http://mirrors.aliyun.com/debian-security/ trixie-security main non-free-firmware\n\
+  deb-src http://mirrors.aliyun.com/debian-security/ trixie-security main non-free-firmware\n\
+  \n\
+  deb http://mirrors.aliyun.com/debian/ trixie-updates main non-free non-free-firmware contrib\n\
+  deb-src http://mirrors.aliyun.com/debian/ trixie-updates main non-free non-free-firmware contrib\n\
+  \n\
+  deb http://mirrors.aliyun.com/debian/ trixie-backports main non-free non-free-firmware contrib\n\
+  deb-src http://mirrors.aliyun.com/debian/ trixie-backports main non-free non-free-firmware contrib" > /etc/apt/sources.list
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    bash \
-    ca-certificates \
-    curl \
-    git \
-    jq \
-    python3 \
-    ripgrep \
+  bash \
+  ca-certificates \
+  curl \
+  git \
+  jq \
+  python3 \
+  ripgrep \
+  vim procps net-tools tzdata \
+  && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
+  && echo ${TZ} > /etc/timezone \
+  && dpkg-reconfigure --frontend noninteractive tzdata \
   && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home --shell /bin/bash sandbox
